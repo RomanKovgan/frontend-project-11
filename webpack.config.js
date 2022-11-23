@@ -9,7 +9,6 @@ const isProduction = process.env.NODE_ENV == 'production';
 const config = {
     entry: './src/index.js',
     output: {
-        filename: 'main.js',
         path: path.resolve(__dirname, 'dist'),
     },
     devServer: {
@@ -28,6 +27,7 @@ const config = {
         rules: [
             {
                 test: /\.(js|jsx)$/i,
+                exclude: /node_modules/,
                 loader: 'babel-loader',
             },
             {
