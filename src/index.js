@@ -2,11 +2,12 @@ import './styles.scss';
 import 'bootstrap';
 import * as yup from 'yup';
 import onChange from 'on-change';
+import i18next from 'i18next';
 
 
-let schema = yup.object().shape({
-  url: yup.string().url().required(),
-});
+
+
+
 
 const render = (elements) => (path, value, prevValue) => {
   switch (path) {
@@ -17,7 +18,7 @@ const render = (elements) => (path, value, prevValue) => {
       renderErrors(elements, value, prevValue);
       break;
     default:
-      console.log(`${path}`);
+      //console.log(`${path}`);
   }
 };
 
@@ -51,8 +52,33 @@ const renderErrors = (elements, error, prevError) => {
   return;
   
 };
+yup.setLocale({
+  string: {
+    url: ({ url }) => ({ key:'invalidUrl' }), 
+  },
+  mixed: {
+    notOneOf: ({ notOneOf }) => ({key: 'usedRSS'})
+  }
+})
+const i18n = i18next.createInstance();
+i18n.init({
+  lng: 'ru',
+  debug: false,
+  resources: {
+   ru: {
+     translation: {
+       invalidUrl: 'Ссылка должна быть валидным URL',
+       usedRSS: 'RSS уже существует',
+       sucsess: 'Rss успешно загружен',
+     }
+   }
+  },
+});
+
+
 
 const state = onChange({
+  usedUrls: [],
   url: '',
   form: {
     valid: true,
@@ -62,21 +88,24 @@ const state = onChange({
   },
 }, render(elements));
 
-
+const schema = (value) => yup.string().url().notOneOf(value);
 
 elements.formRss.addEventListener('submit', (e) => {
   e.preventDefault();
   state.form.processState = 'sending';
-  schema.validate( {url: state.url}).then(
+  schema(state.usedUrls).validate(state.url).then(
     //@todo fetch(rss)
     () => {
       state.form.errors = null;
       state.form.valid = true;
       state.form.processState = 'send';
+      state.usedUrls.push(state.url);
     }
   )
   .catch((e) => {
-    state.form.errors = e.message;
+    const err = e.errors.map((err) => err.key)
+    state.form.errors = i18n.t(err);
+    console.log(state.form.errors);
     state.form.valid = false;
   });
 
@@ -85,5 +114,6 @@ elements.formRss.addEventListener('submit', (e) => {
 elements.inputUrl.addEventListener('input', (e) => {
   const { value } = e.target;
   state.url = value;
+  
 });
 
