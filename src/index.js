@@ -5,7 +5,9 @@ import onChange from 'on-change';
 import i18next from 'i18next';
 import axios from 'axios';
 import parser from './parser.js';
-import { renderFeeds, renderPosts } from './view.js';
+import {
+  renderFeeds, renderPosts, renderModal, renderUsedLinks,
+} from './view.js';
 
 const elements = {
   formRss: document.querySelector('.rss-form'),
@@ -14,6 +16,7 @@ const elements = {
   feedbackUrl: document.querySelector('.feedback'),
   feedsContainer: document.querySelector('.feeds'),
   postsContainer: document.querySelector('.posts'),
+  viewButtons: document.querySelectorAll('.btn-sm'),
 };
 
 const renderErrors = (elementsError, error, prevError) => {
@@ -79,6 +82,9 @@ const render = () => (path, value, prevValue) => {
       renderPosts(elements.postsContainer, state.data.posts);
 
       break;
+    case 'uiState.readedPostsId':
+      renderUsedLinks(state.uiState.readedPostsId);
+      break;
     case 'form.errors':
       renderErrors(elements, value, prevValue);
       break;
@@ -93,6 +99,10 @@ const state = onChange({
   data: {
     feeds: [],
     posts: [],
+  },
+  uiState: {
+    modal: null,
+    readedPostsId: new Set(),
   },
   form: {
     valid: true,
@@ -161,4 +171,27 @@ elements.formRss.addEventListener('submit', (event) => {
 elements.inputUrl.addEventListener('input', (ev) => {
   const { value } = ev.target;
   state.url = value;
+});
+
+const buttons = document.querySelector('.container-xxl');
+
+buttons.addEventListener('click', (e) => {
+  const button = e.target.closest('button');
+  if (!button) { return; }
+  if (!buttons.contains(button)) { return; }
+  const postId = button.getAttribute('data-id');
+  state.uiState.modal = postId;
+  state.uiState.readedPostsId.add(postId);
+  const data = state.data.posts.find((el) => el.id === postId);
+  renderModal(button, data);
+});
+
+const links = document.querySelector('.container-xxl');
+links.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const link = e.target.closest('li');
+  if (!link) { return; }
+  if (!links.contains(link)) { return; }
+  const postID = link.id;
+  state.uiState.readedPostsId.add(postID);
 });

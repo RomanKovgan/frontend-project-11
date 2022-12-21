@@ -1,3 +1,5 @@
+import { uniqueId } from 'lodash';
+
 const extractFeeds = (domEl) => {
   const titleEl = domEl.querySelector('channel > title');
   const title = titleEl.textContent;
@@ -17,7 +19,14 @@ const extractPosts = (domEl) => {
     const linkEl = postElement.querySelector('link');
     const link = linkEl.textContent;
 
-    return { title, link };
+    const descriptionEl = postElement.querySelector('description');
+    const description = descriptionEl.textContent;
+
+    const id = uniqueId();
+
+    return {
+      title, link, description, id,
+    };
   });
 
   return posts;
@@ -26,7 +35,6 @@ const extractPosts = (domEl) => {
 export default (content) => {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(content, 'application/xml');
-
   const feeds = extractFeeds(xmlDoc);
   const posts = extractPosts(xmlDoc);
 

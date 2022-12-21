@@ -53,11 +53,23 @@ const renderPosts = (container, posts) => {
   posts.forEach((post) => {
     const itemPost = document.createElement('li');
     itemPost.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-
+    itemPost.setAttribute('id', post.id);
     const postHref = document.createElement('a');
-    postHref.setAttribute('href', post.href);
+    postHref.classList.add('fw-bold');
+    postHref.setAttribute('href', post.link);
+    postHref.setAttribute('target', '_blank');
+    postHref.setAttribute('data-id', post.id);
+    postHref.setAttribute('rel', 'noopener noreferrer');
     postHref.textContent = post.title;
-    itemPost.append(postHref);
+
+    const button = document.createElement('button');
+    button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+    button.textContent = 'Просмотр';
+    button.setAttribute('data-bs-toggle', 'modal');
+    button.setAttribute('data-bs-target', '#modal');
+    button.setAttribute('data-id', post.id);
+
+    itemPost.append(postHref, button);
     listGroup.append(itemPost);
   });
 
@@ -66,4 +78,23 @@ const renderPosts = (container, posts) => {
   container.append(divCardBorder);
 };
 
-export { renderFeeds, renderPosts };
+const renderModal = (container, state) => {
+  const header = document.querySelector('.modal-title');
+  const body = document.querySelector('.modal-body');
+  const fullArticle = document.querySelector('.full-article');
+  fullArticle.setAttribute('href', state.link);
+  header.textContent = state.title;
+  body.textContent = state.description;
+};
+
+const renderUsedLinks = (state) => {
+  state.forEach((id) => {
+    const post = document.querySelector(`a[data-id="${id}"]`);
+    post.classList.remove('fw-bold');
+    post.classList.add('fw-normal', 'link-secondary');
+  });
+};
+
+export {
+  renderFeeds, renderPosts, renderModal, renderUsedLinks,
+};
