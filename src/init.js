@@ -65,7 +65,7 @@ export default () => {
         renderInputValidation(elements.inputUrl, state);
         break;
       default:
-        // console.log(`${path}`);
+        console.log(`Unknoun path: ${path}`);
         break;
     }
   };
