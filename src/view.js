@@ -95,6 +95,12 @@ const renderUsedLinks = (state) => {
   });
 };
 
+const renderFeedback = (container, state) => {
+  container.textContent = state.form.feedback;
+  container.classList.remove('text-danger');
+  container.classList.add('text-success');
+};
+
 export {
-  renderFeeds, renderPosts, renderModal, renderUsedLinks,
+  renderFeeds, renderPosts, renderModal, renderUsedLinks, renderFeedback,
 };

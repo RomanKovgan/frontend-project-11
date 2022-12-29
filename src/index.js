@@ -5,8 +5,9 @@ import onChange from 'on-change';
 import i18next from 'i18next';
 import axios from 'axios';
 import parser from './parser.js';
+import updatePosts from './rssUpdater.js';
 import {
-  renderFeeds, renderPosts, renderModal, renderUsedLinks,
+  renderFeeds, renderPosts, renderModal, renderUsedLinks, renderFeedback,
 } from './view.js';
 
 const elements = {
@@ -41,42 +42,16 @@ const renderErrors = (elementsError, error, prevError) => {
   elementsError.feedbackUrl.textContent = error;
 };
 
-const updatePosts = (href) => {
-  axios({
-    method: 'get',
-    url: 'https://allorigins.hexlet.app/raw',
-    params: {
-      url: href,
-      disableCash: true,
-    },
-  })
-    .then((response) => {
-      const data = parser(response.data);
-      const { posts } = data;
-      const newPosts = posts.reduce((acc, item) => {
-        const newLink = item.link;
-        const link = state.data.posts.find((el) => (el.link === newLink));
-        if (!link) {
-          acc.push(item);
-        }
-        return acc;
-      }, []);
-      state.data.posts.push(...newPosts);
-    }).then(setTimeout(() => updatePosts(href), 5000));
-};
-
-const updateData = (urls) => {
-  urls.forEach((url) => updatePosts(url));
-};
-
 const render = () => (path, value, prevValue) => {
   switch (path) {
   //  case 'form.valid':
   //    renderList();
   //    break;
+    case 'form.feedback':
+      renderFeedback(elements.feedbackUrl, state);
+      break;
     case 'data.feeds':
       renderFeeds(elements.feedsContainer, state.data.feeds);
-      updateData(state.usedUrls);
       break;
     case 'data.posts':
       renderPosts(elements.postsContainer, state.data.posts);
@@ -105,9 +80,9 @@ const state = onChange({
     readedPostsId: new Set(),
   },
   form: {
-    valid: true,
+    valid: 'valid',
     processState: 'filling',
-    processError: null,
+    feedback: null,
     errors: null,
   },
 }, render(elements));
@@ -130,7 +105,9 @@ i18n.init({
       translation: {
         invalidUrl: 'Ссылка должна быть валидным URL',
         usedRSS: 'RSS уже существует',
-        sucsess: 'Rss успешно загружен',
+        success: 'Rss успешно загружен',
+        networkError: 'Ошибка сети',
+        perserError: 'Ресурс не содержит валидный RSS',
       },
     },
   },
@@ -142,8 +119,9 @@ elements.formRss.addEventListener('submit', (event) => {
   event.preventDefault();
   state.form.processState = 'sending';
   schema(state.usedUrls).validate(state.url).then(() => {
+    state.form.feedback = null;
     state.form.errors = null;
-    state.form.valid = true;
+    state.form.valid = 'valid';
     state.form.processState = 'send';
     state.usedUrls.push(state.url);
   }).then(() => axios({
@@ -155,16 +133,32 @@ elements.formRss.addEventListener('submit', (event) => {
     },
   })
     .then((response) => {
+      state.form.feedback = i18n.t('success');
       const data = parser(response.data);
       const { feeds, posts } = data;
 
       state.data.feeds.unshift(feeds);
       state.data.posts.unshift(...posts);
     }))
+    .then(() => updatePosts(state.url))
     .catch((e) => {
-      const err = e.errors.map((error) => error.key);
-      state.form.errors = i18n.t(err);
-      state.form.valid = false;
+      state.form.valid = 'invalid';
+      console.log(e.name);
+      switch (e.name) {
+        case 'ValidationError': {
+          const err = e.errors.map((error) => error.key);
+          state.form.errors = i18n.t(err);
+          state.form.valid = false;
+          break;
+        }
+        case 'AxiosError':
+          state.form.errors = i18n.t('networkError');
+          break;
+        case 'Error':
+          state.form.errors = i18n.t('perserError');
+          break;
+        default:
+      }
     });
 });
 

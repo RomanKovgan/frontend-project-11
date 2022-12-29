@@ -2,6 +2,9 @@ import { uniqueId } from 'lodash';
 
 const extractFeeds = (domEl) => {
   const titleEl = domEl.querySelector('channel > title');
+  if (!titleEl) {
+    throw new Error('ParserError');
+  }
   const title = titleEl.textContent;
 
   const descriptionEl = domEl.querySelector('channel > description');
