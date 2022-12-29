@@ -24,7 +24,7 @@ const updatePosts = (url, state) => {
       state.data.posts.push(...newPosts);
     })
     .then(() => {
-      setTimeout(() => updatePosts(url), 5000);
+      setTimeout(() => updatePosts(url, state), 5000);
     });
 };
 

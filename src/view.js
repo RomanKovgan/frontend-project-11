@@ -101,6 +101,13 @@ const renderFeedback = (container, state) => {
   container.classList.add('text-success');
 };
 
+const renderInputValidation = (container, state) => {
+  container.classList.remove('is-invalid');
+  if (state.form.valid === 'invalid') {
+    container.classList.add('is-invalid');
+  }
+};
+
 export {
-  renderFeeds, renderPosts, renderModal, renderUsedLinks, renderFeedback,
+  renderFeeds, renderPosts, renderModal, renderUsedLinks, renderFeedback, renderInputValidation,
 };
