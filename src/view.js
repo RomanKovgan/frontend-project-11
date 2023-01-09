@@ -95,8 +95,8 @@ const renderUsedLinks = (state) => {
   });
 };
 
-const renderFeedback = (container, state) => {
-  container.textContent = state.form.feedback;
+const renderFeedback = (container, feedback) => {
+  container.textContent = feedback;
   container.classList.remove('text-danger');
   container.classList.add('text-success');
 };
@@ -108,6 +108,36 @@ const renderInputValidation = (container, state) => {
   }
 };
 
+const handlerProcessState = (elements, state) => {
+  console.log(state);
+  switch (state) {
+    case 'filling':
+      break;
+    case 'sending':
+      console.log(state);
+      elements.addUrlButton.setAttribute('disabled', 'disabled');
+      break;
+    case 'send':
+      elements.addUrlButton.removeAttribute('disabled');
+      elements.inputUrl.value = '';
+      elements.inputUrl.focus();
+      // elements.formRss.reset();
+      break;
+    case 'waiting':
+    case 'failed':
+      elements.addUrlButton.removeAttribute('disabled');
+      break;
+    default:
+      break;
+  }
+};
+
 export {
-  renderFeeds, renderPosts, renderModal, renderUsedLinks, renderFeedback, renderInputValidation,
+  renderFeeds,
+  renderPosts,
+  renderModal,
+  renderUsedLinks,
+  renderFeedback,
+  renderInputValidation,
+  handlerProcessState,
 };

@@ -5,7 +5,13 @@ import axios from 'axios';
 import parser from './parser.js';
 import updatePosts from './rssUpdater.js';
 import {
-  renderFeeds, renderPosts, renderModal, renderUsedLinks, renderFeedback, renderInputValidation,
+  renderFeeds,
+  renderPosts,
+  renderModal,
+  renderUsedLinks,
+  renderFeedback,
+  renderInputValidation,
+  handlerProcessState,
 } from './view.js';
 
 const elements = {
@@ -15,6 +21,7 @@ const elements = {
   feedbackUrl: document.querySelector('.feedback'),
   feedsContainer: document.querySelector('.feeds'),
   postsContainer: document.querySelector('.posts'),
+  addUrlButton: document.querySelector('[aria-label="add"]'),
   viewButtons: document.querySelectorAll('.btn-sm'),
 };
 
@@ -31,7 +38,6 @@ export default () => {
     }
 
     if (error && !prevError) {
-      console.log(state.form.valid);
       elementsError.feedbackUrl.classList.add('text-danger');
       elementsError.feedbackUrl.textContent = error;
       return;
@@ -46,7 +52,7 @@ export default () => {
     //    renderList();
     //    break;
       case 'form.feedback':
-        renderFeedback(elements.feedbackUrl, state);
+        renderFeedback(elements.feedbackUrl, value);
         break;
       case 'data.feeds':
         renderFeeds(elements.feedsContainer, state.data.feeds);
@@ -63,6 +69,10 @@ export default () => {
         break;
       case 'form.valid':
         renderInputValidation(elements.inputUrl, state);
+        break;
+      case 'form.processState':
+        console.log(value);
+        handlerProcessState(elements, value);
         break;
       default:
         // console.log(`Unknoun path: ${path}`);
@@ -118,31 +128,34 @@ export default () => {
 
   elements.formRss.addEventListener('submit', (event) => {
     event.preventDefault();
-    state.form.processState = 'sending';
     state.form.valid = 'valid';
     schema(state.usedUrls).validate(state.url).then(() => {
       state.form.feedback = null;
       state.form.errors = null;
-      state.form.processState = 'send';
-      state.usedUrls.push(state.url);
+      state.form.processState = 'sending';
     }).then(() => axios({
       method: 'get',
       url: 'https://allorigins.hexlet.app/raw',
       params: {
         url: state.url,
-        disableCash: true,
+        disableCache: true,
       },
-    })
+    }))
       .then((response) => {
+        state.usedUrls.push(state.url);
         state.form.feedback = i18n.t('success');
         const data = parser(response.data);
         const { feeds, posts } = data;
-
+        state.form.processState = 'send';
         state.data.feeds.unshift(feeds);
         state.data.posts.unshift(...posts);
-      }))
-      .then(() => updatePosts(state.url, state))
+      })
+      .then(() => {
+        state.form.processState = 'waiting';
+        updatePosts(state.url, state);
+      })
       .catch((e) => {
+        state.form.processState = 'failed';
         switch (e.name) {
           case 'ValidationError': {
             state.form.valid = 'invalid';

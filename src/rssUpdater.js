@@ -7,7 +7,7 @@ const updatePosts = (url, state) => {
     url: 'https://allorigins.hexlet.app/raw',
     params: {
       url,
-      disableCash: true,
+      disableCache: true,
     },
   })
     .then((response) => {
