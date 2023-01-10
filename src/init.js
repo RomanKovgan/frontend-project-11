@@ -133,18 +133,20 @@ export default () => {
       state.form.feedback = null;
       state.form.errors = null;
       state.form.processState = 'sending';
-    }).then(() => axios({
-      method: 'get',
-      url: 'https://allorigins.hexlet.app/raw',
-      params: {
-        url: state.url,
-        disableCache: true,
-      },
-    }))
+      // to do: save data with axios
+    }).then(() => (axios(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(state.url)}&disableCache=true`)))
+      // .then(() => axios({
+      //   method: 'get',
+      //   url: 'https://allorigins.hexlet.app/raw',
+      //   params: {
+      //     url: state.url,
+      //     disableCache: true,
+      //   },
+      // })
       .then((response) => {
         state.usedUrls.push(state.url);
         state.form.feedback = i18n.t('success');
-        const data = parser(response.data);
+        const data = parser(response.data.contents);
         const { feeds, posts } = data;
         state.form.processState = 'send';
         state.data.feeds.unshift(feeds);
