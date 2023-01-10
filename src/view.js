@@ -89,6 +89,8 @@ const renderModal = (container, state) => {
 
 const renderUsedLinks = (state) => {
   state.forEach((id) => {
+    console.log(id);
+    console.log(state);
     const post = document.querySelector(`a[data-id="${id}"]`);
     post.classList.remove('fw-bold');
     post.classList.add('fw-normal', 'link-secondary');
@@ -103,7 +105,7 @@ const renderFeedback = (container, feedback) => {
 
 const renderInputValidation = (container, state) => {
   container.classList.remove('is-invalid');
-  if (state.form.valid === 'invalid') {
+  if (state === 'invalid') {
     container.classList.add('is-invalid');
   }
 };

@@ -55,23 +55,22 @@ export default () => {
         renderFeedback(elements.feedbackUrl, value);
         break;
       case 'data.feeds':
-        renderFeeds(elements.feedsContainer, state.data.feeds);
+        renderFeeds(elements.feedsContainer, value);
         break;
       case 'data.posts':
-        renderPosts(elements.postsContainer, state.data.posts);
+        renderPosts(elements.postsContainer, value);
 
         break;
       case 'uiState.readedPostsId':
-        renderUsedLinks(state.uiState.readedPostsId);
+        renderUsedLinks(value);
         break;
       case 'form.errors':
         renderErrors(elements, value, prevValue);
         break;
       case 'form.valid':
-        renderInputValidation(elements.inputUrl, state);
+        renderInputValidation(elements.inputUrl, value);
         break;
       case 'form.processState':
-        console.log(value);
         handlerProcessState(elements, value);
         break;
       default:
