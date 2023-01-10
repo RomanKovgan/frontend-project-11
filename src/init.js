@@ -59,7 +59,6 @@ export default () => {
         break;
       case 'data.posts':
         renderPosts(elements.postsContainer, value);
-
         break;
       case 'uiState.readedPostsId':
         renderUsedLinks(value);
@@ -78,6 +77,7 @@ export default () => {
         break;
     }
   };
+
   const state = onChange({
     usedUrls: [],
     url: '',
@@ -95,7 +95,7 @@ export default () => {
       feedback: null,
       errors: null,
     },
-  }, render(elements));
+  }, render());
 
   yup.setLocale({
     string: {
@@ -156,6 +156,7 @@ export default () => {
         updatePosts(state.url, state);
       })
       .catch((e) => {
+        console.log(e);
         state.form.processState = 'failed';
         switch (e.name) {
           case 'ValidationError': {

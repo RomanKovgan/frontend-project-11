@@ -89,9 +89,8 @@ const renderModal = (container, state) => {
 
 const renderUsedLinks = (state) => {
   state.forEach((id) => {
-    console.log(id);
-    console.log(state);
     const post = document.querySelector(`a[data-id="${id}"]`);
+    if (!post) return;
     post.classList.remove('fw-bold');
     post.classList.add('fw-normal', 'link-secondary');
   });
