@@ -25,6 +25,25 @@ const elements = {
   viewButtons: document.querySelectorAll('.btn-sm'),
 };
 
+const initialState = {
+  usedUrls: [],
+  url: '',
+  data: {
+    feeds: [],
+    posts: [],
+  },
+  uiState: {
+    modal: null,
+    readedPostsId: new Set(),
+  },
+  form: {
+    valid: 'valid',
+    processState: 'filling',
+    feedback: null,
+    errors: null,
+  },
+};
+
 export default () => {
   const renderErrors = (elementsError, error, prevError) => {
     if (!error && !prevError) {
@@ -48,9 +67,6 @@ export default () => {
 
   const render = () => (path, value, prevValue) => {
     switch (path) {
-    //  case 'form.valid':
-    //    renderList();
-    //    break;
       case 'form.feedback':
         renderFeedback(elements.feedbackUrl, value);
         break;
@@ -58,7 +74,7 @@ export default () => {
         renderFeeds(elements.feedsContainer, value);
         break;
       case 'data.posts':
-        renderPosts(elements.postsContainer, value);
+        renderPosts(elements.postsContainer, value, initialState.uiState.readedPostsId);
         break;
       case 'uiState.readedPostsId':
         renderUsedLinks(value);
@@ -77,25 +93,6 @@ export default () => {
         break;
     }
   };
-
-  const state = onChange({
-    usedUrls: [],
-    url: '',
-    data: {
-      feeds: [],
-      posts: [],
-    },
-    uiState: {
-      modal: null,
-      readedPostsId: new Set(),
-    },
-    form: {
-      valid: 'valid',
-      processState: 'filling',
-      feedback: null,
-      errors: null,
-    },
-  }, render());
 
   yup.setLocale({
     string: {
@@ -122,6 +119,8 @@ export default () => {
       },
     },
   });
+
+  const state = onChange(initialState, render());
 
   const schema = (value) => yup.string().url().notOneOf(value);
 

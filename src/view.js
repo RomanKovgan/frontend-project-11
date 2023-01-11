@@ -33,7 +33,7 @@ const renderFeeds = (container, feeds) => {
   container.append(divCardBorder);
 };
 
-const renderPosts = (container, posts) => {
+const renderPosts = (container, posts, uiPosts) => {
   container.innerHTML = '';
 
   const divCardBorder = document.createElement('div');
@@ -76,6 +76,12 @@ const renderPosts = (container, posts) => {
   divCardBody.append(listGroup);
   divCardBorder.append(divCardBody);
   container.append(divCardBorder);
+  uiPosts.forEach((id) => {
+    const post = document.querySelector(`a[data-id="${id}"]`);
+    if (!post) return;
+    post.classList.remove('fw-bold');
+    post.classList.add('fw-normal', 'link-secondary');
+  });
 };
 
 const renderModal = (container, state) => {
@@ -110,19 +116,16 @@ const renderInputValidation = (container, state) => {
 };
 
 const handlerProcessState = (elements, state) => {
-  console.log(state);
   switch (state) {
     case 'filling':
       break;
     case 'sending':
-      console.log(state);
       elements.addUrlButton.setAttribute('disabled', 'disabled');
       break;
     case 'send':
       elements.addUrlButton.removeAttribute('disabled');
       elements.inputUrl.value = '';
       elements.inputUrl.focus();
-      // elements.formRss.reset();
       break;
     case 'waiting':
     case 'failed':
