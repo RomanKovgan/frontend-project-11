@@ -1,8 +1,9 @@
 import axios from 'axios';
+import { uniqueId } from 'lodash';
 import parser from './parser.js';
 
 const updatePosts = (url, state) => {
-  axios({
+  const promise = axios({
     method: 'get',
     url: 'https://allorigins.hexlet.app/raw',
     params: {
@@ -21,11 +22,15 @@ const updatePosts = (url, state) => {
         }
         return acc;
       }, []);
-      state.data.posts.push(...newPosts);
-    })
-    .then(() => {
-      setTimeout(() => updatePosts(url, state), 10000);
+      const postsWithId = newPosts.map((post) => {
+        const id = uniqueId();
+        post.id = id;
+        return post;
+      });
+      state.data.posts.push(...postsWithId);
     });
+
+  promise.finally(setTimeout(() => updatePosts(url, state), 5000));
 };
 
 export default updatePosts;

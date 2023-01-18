@@ -1,3 +1,26 @@
+import i18next from 'i18next';
+import { setLocale } from 'yup';
+import ru from './locales/ru.js';
+
+const i18n = i18next.createInstance();
+
+i18n.init({
+  lng: 'ru',
+  debug: false,
+  resources: {
+    ru,
+  },
+}).then(() => {
+  setLocale({
+    string: {
+      url: () => ({ key: 'invalidUrl' }),
+    },
+    mixed: {
+      notOneOf: () => ({ key: 'usedRSS' }),
+    },
+  });
+});
+
 const renderFeeds = (container, feeds) => {
   container.innerHTML = '';
   const divCardBorder = document.createElement('div');
@@ -84,7 +107,7 @@ const renderPosts = (container, posts, uiPosts) => {
   });
 };
 
-const renderModal = (container, state) => {
+const renderModal = (state) => {
   const header = document.querySelector('.modal-title');
   const body = document.querySelector('.modal-body');
   const fullArticle = document.querySelector('.full-article');
@@ -103,7 +126,7 @@ const renderUsedLinks = (state) => {
 };
 
 const renderFeedback = (container, feedback) => {
-  container.textContent = feedback;
+  container.textContent = i18n.t(feedback);
   container.classList.remove('text-danger');
   container.classList.add('text-success');
 };
@@ -113,6 +136,26 @@ const renderInputValidation = (container, state) => {
   if (state === 'invalid') {
     container.classList.add('is-invalid');
   }
+};
+
+const renderErrors = (elementsError, error, prevError) => {
+  if (!error && !prevError) {
+    return;
+  }
+
+  if (!error && prevError) {
+    elementsError.feedbackUrl.classList.remove('text-danger');
+    elementsError.feedbackUrl.textContent = '';
+    return;
+  }
+
+  if (error && !prevError) {
+    elementsError.feedbackUrl.classList.add('text-danger');
+    elementsError.feedbackUrl.textContent = i18n.t(error);
+    return;
+  }
+
+  elementsError.feedbackUrl.textContent = i18n.t(error);
 };
 
 const handlerProcessState = (elements, state) => {
@@ -143,5 +186,6 @@ export {
   renderUsedLinks,
   renderFeedback,
   renderInputValidation,
+  renderErrors,
   handlerProcessState,
 };
