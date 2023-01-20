@@ -1,28 +1,6 @@
-import i18next from 'i18next';
-import { setLocale } from 'yup';
-import ru from './locales/ru.js';
-
-const i18n = i18next.createInstance();
-
-i18n.init({
-  lng: 'ru',
-  debug: false,
-  resources: {
-    ru,
-  },
-}).then(() => {
-  setLocale({
-    string: {
-      url: () => ({ key: 'invalidUrl' }),
-    },
-    mixed: {
-      notOneOf: () => ({ key: 'usedRSS' }),
-    },
-  });
-});
-
-const renderFeeds = (container, feeds) => {
+const renderFeeds = (container, feeds, i18n) => {
   container.innerHTML = '';
+
   const divCardBorder = document.createElement('div');
   divCardBorder.classList.add('card', 'border-0');
 
@@ -31,7 +9,7 @@ const renderFeeds = (container, feeds) => {
 
   const cardTitle = document.createElement('h2');
   cardTitle.classList.add('card-title', 'h4');
-  cardTitle.textContent = 'Фиды';
+  cardTitle.textContent = i18n.t('Feeds');
 
   divCardBody.append(cardTitle);
   divCardBorder.append(divCardBody);
@@ -56,7 +34,7 @@ const renderFeeds = (container, feeds) => {
   container.append(divCardBorder);
 };
 
-const renderPosts = (container, posts, uiPosts) => {
+const renderPosts = (container, posts, uiPosts, i18n) => {
   container.innerHTML = '';
 
   const divCardBorder = document.createElement('div');
@@ -67,7 +45,7 @@ const renderPosts = (container, posts, uiPosts) => {
 
   const cardTitle = document.createElement('h2');
   cardTitle.classList.add('card-title', 'h4');
-  cardTitle.textContent = 'Посты';
+  cardTitle.textContent = i18n.t('Posts');
   divCardBody.append(cardTitle);
 
   const listGroup = document.createElement('ul');
@@ -125,7 +103,7 @@ const renderUsedLinks = (state) => {
   });
 };
 
-const renderFeedback = (container, feedback) => {
+const renderFeedback = (container, feedback, i18n) => {
   container.textContent = i18n.t(feedback);
   container.classList.remove('text-danger');
   container.classList.add('text-success');
@@ -138,7 +116,7 @@ const renderInputValidation = (container, state) => {
   }
 };
 
-const renderErrors = (elementsError, error, prevError) => {
+const renderErrors = (elementsError, error, prevError, i18n) => {
   if (!error && !prevError) {
     return;
   }
@@ -179,13 +157,33 @@ const handlerProcessState = (elements, state) => {
   }
 };
 
-export {
-  renderFeeds,
-  renderPosts,
-  renderModal,
-  renderUsedLinks,
-  renderFeedback,
-  renderInputValidation,
-  renderErrors,
-  handlerProcessState,
+const render = (elements, initialState, i18n) => (path, value, prevValue) => {
+  switch (path) {
+    case 'data.feeds':
+      renderFeeds(elements.feedsContainer, value, i18n);
+      break;
+    case 'data.posts':
+      renderPosts(elements.postsContainer, value, initialState.uiState.readedPostsId, i18n);
+      break;
+    case 'uiState.readedPostsId':
+      renderUsedLinks(value);
+      break;
+    case 'form.valid':
+      renderInputValidation(elements.inputUrl, value);
+      break;
+    case 'form.processState':
+      handlerProcessState(elements, value);
+      break;
+    case 'form.feedback':
+      renderFeedback(elements.feedbackUrl, value, i18n);
+      break;
+    case 'form.errors':
+      renderErrors(elements, value, prevValue, i18n);
+      break;
+    default:
+      // console.log(`Unknoun path: ${path}`);
+      break;
+  }
 };
+
+export { render, renderModal };

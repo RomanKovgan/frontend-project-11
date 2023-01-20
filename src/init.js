@@ -2,19 +2,12 @@ import * as yup from 'yup';
 import onChange from 'on-change';
 import axios from 'axios';
 import { uniqueId } from 'lodash';
+import i18next from 'i18next';
 import parser from './parser.js';
 import updatePosts from './rssUpdater.js';
-
-import {
-  renderFeeds,
-  renderPosts,
-  renderModal,
-  renderUsedLinks,
-  renderFeedback,
-  renderInputValidation,
-  renderErrors,
-  handlerProcessState,
-} from './view.js';
+import { render, renderModal } from './view.js';
+import ru from './locales/ru.js';
+import validationSetLocale from './locales/validationSetLocale.js';
 
 export default () => {
   const elements = {
@@ -26,6 +19,7 @@ export default () => {
     postsContainer: document.querySelector('.posts'),
     addUrlButton: document.querySelector('[aria-label="add"]'),
     viewButtons: document.querySelectorAll('.btn-sm'),
+    postsListener: document.querySelector('.container-xxl'),
   };
 
   const initialState = {
@@ -47,40 +41,19 @@ export default () => {
     },
   };
 
-  const render = () => (path, value, prevValue) => {
-    switch (path) {
-      case 'data.feeds':
-        renderFeeds(elements.feedsContainer, value);
-        break;
-      case 'data.posts':
-        renderPosts(elements.postsContainer, value, initialState.uiState.readedPostsId);
-        break;
-      case 'uiState.readedPostsId':
-        renderUsedLinks(value);
-        break;
-      case 'form.valid':
-        renderInputValidation(elements.inputUrl, value);
-        break;
-      case 'form.processState':
-        handlerProcessState(elements, value);
-        break;
-      case 'form.feedback':
-        renderFeedback(elements.feedbackUrl, value);
-        break;
-      case 'form.errors':
-        renderErrors(elements, value, prevValue);
-        break;
-      default:
-        // console.log(`Unknoun path: ${path}`);
-        break;
-    }
-  };
+  const i18n = i18next.createInstance();
 
-  const state = onChange(initialState, render());
+  i18n.init({
+    lng: 'ru',
+    debug: false,
+    resources: {
+      ru,
+    },
+  }).then(() => validationSetLocale());
+
+  const state = onChange(initialState, render(elements, initialState, i18n));
 
   const schema = (value) => yup.string().url().notOneOf(value);
-
-  // const request = () => axios(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(state.url)}&disableCache=true`);
 
   const updateStateData = (response) => {
     const data = parser(response);
@@ -95,13 +68,13 @@ export default () => {
   };
 
   const addData = () => {
+    state.form.processState = 'sending';
     const pormise = axios(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(state.url)}&disableCache=true`);
     pormise.then((response) => {
       state.usedUrls.push(state.url);
       state.form.feedback = 'success';
       state.form.processState = 'send';
       updateStateData(response.data.contents);
-    }).then(() => {
       state.form.processState = 'waiting';
       updatePosts(state.url, state);
     }).catch((e) => {
@@ -120,14 +93,15 @@ export default () => {
 
   elements.formRss.addEventListener('submit', (event) => {
     event.preventDefault();
+    const formData = new FormData(event.target);
+    state.url = formData.get('url');
     state.form.valid = 'valid';
     schema(state.usedUrls).validate(state.url)
       .then(() => {
         state.form.feedback = null;
         state.form.errors = null;
-        state.form.processState = 'sending';
+        addData();
       })
-      .then(() => addData())
       .catch((e) => {
         state.form.processState = 'failed';
         switch (e.name) {
@@ -140,29 +114,14 @@ export default () => {
           default:
         }
       });
-    // addData();
   });
 
-  elements.inputUrl.addEventListener('input', (ev) => {
-    const { value } = ev.target;
-    state.url = value;
-  });
-
-  const buttons = document.querySelector('.container-xxl');
-
-  buttons.addEventListener('click', (e) => {
+  elements.postsListener.addEventListener('click', (e) => {
     const postId = e.target.dataset.id;
     if (!postId) { return; }
     state.uiState.modal = postId;
     state.uiState.readedPostsId.add(postId);
     const data = state.data.posts.find((el) => el.id === postId);
     renderModal(data);
-  });
-
-  const links = document.querySelector('.container-xxl');
-  links.addEventListener('click', (e) => {
-    const postId = e.target.dataset.id;
-    if (!postId) { return; }
-    state.uiState.readedPostsId.add(postId);
   });
 };

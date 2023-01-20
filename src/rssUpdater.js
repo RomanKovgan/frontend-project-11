@@ -28,6 +28,8 @@ const updatePosts = (url, state) => {
         return post;
       });
       state.data.posts.push(...postsWithId);
+    }).catch((e) => {
+      console.error(e.message);
     });
 
   promise.finally(setTimeout(() => updatePosts(url, state), 5000));
