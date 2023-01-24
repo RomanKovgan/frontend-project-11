@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { uniqueId } from 'lodash';
+import { uniqueId, differenceWith, isEqual } from 'lodash';
 import parser from './parser.js';
 
 const updatePosts = (url, state) => {
@@ -14,14 +14,7 @@ const updatePosts = (url, state) => {
     .then((response) => {
       const data = parser(response.data);
       const { posts } = data;
-      const newPosts = posts.reduce((acc, item) => {
-        const newLink = item.link;
-        const link = state.data.posts.find((el) => (el.link === newLink));
-        if (!link) {
-          acc.push(item);
-        }
-        return acc;
-      }, []);
+      const newPosts = differenceWith(posts, state.data.posts, isEqual);
       const postsWithId = newPosts.map((post) => {
         const id = uniqueId();
         post.id = id;

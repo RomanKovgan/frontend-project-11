@@ -1,4 +1,4 @@
-const extractFeeds = (domEl) => {
+const extractFeed = (domEl) => {
   const titleEl = domEl.querySelector('channel > title');
   const title = titleEl.textContent;
 
@@ -34,8 +34,8 @@ export default (content) => {
     throw new Error('ParserError');
   }
 
-  const feeds = extractFeeds(xmlDoc);
+  const feed = extractFeed(xmlDoc);
   const posts = extractPosts(xmlDoc);
 
-  return { feeds, posts };
+  return { feed, posts };
 };

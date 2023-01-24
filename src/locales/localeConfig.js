@@ -1,10 +1,8 @@
-import { setLocale } from 'yup';
-
-export default () => setLocale({
+export default {
   string: {
     url: () => ({ key: 'validateErrors.invalidUrl' }),
   },
   mixed: {
     notOneOf: () => ({ key: 'validateErrors.usedRSS' }),
   },
-});
+};

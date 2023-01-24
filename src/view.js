@@ -9,7 +9,7 @@ const renderFeeds = (container, feeds, i18n) => {
 
   const cardTitle = document.createElement('h2');
   cardTitle.classList.add('card-title', 'h4');
-  cardTitle.textContent = i18n.t('Feeds');
+  cardTitle.textContent = i18n.t('headlines.feeds');
 
   divCardBody.append(cardTitle);
   divCardBorder.append(divCardBody);
@@ -45,7 +45,7 @@ const renderPosts = (container, posts, uiPosts, i18n) => {
 
   const cardTitle = document.createElement('h2');
   cardTitle.classList.add('card-title', 'h4');
-  cardTitle.textContent = i18n.t('Posts');
+  cardTitle.textContent = i18n.t('headlines.posts');
   divCardBody.append(cardTitle);
 
   const listGroup = document.createElement('ul');

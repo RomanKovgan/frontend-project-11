@@ -7,7 +7,7 @@ import parser from './parser.js';
 import updatePosts from './rssUpdater.js';
 import { render, renderModal } from './view.js';
 import ru from './locales/ru.js';
-import validationSetLocale from './locales/validationSetLocale.js';
+import config from './locales/localeConfig.js';
 
 export default () => {
   const elements = {
@@ -23,7 +23,6 @@ export default () => {
   };
 
   const initialState = {
-    usedUrls: [],
     url: '',
     data: {
       feeds: [],
@@ -49,21 +48,22 @@ export default () => {
     resources: {
       ru,
     },
-  }).then(() => validationSetLocale());
+  }).then(() => yup.setLocale(config));
 
   const state = onChange(initialState, render(elements, initialState, i18n));
 
   const schema = (value) => yup.string().url().notOneOf(value);
 
-  const updateStateData = (response) => {
+  const updateStateData = (response, url) => {
     const data = parser(response);
-    const { feeds, posts } = data;
+    const { feed, posts } = data;
     const postsWithId = posts.map((post) => {
       const id = uniqueId();
       post.id = id;
       return post;
     });
-    state.data.feeds.unshift(feeds);
+    const feedWithUrl = { ...feed, url };
+    state.data.feeds.unshift(feedWithUrl);
     state.data.posts.unshift(...postsWithId);
   };
 
@@ -71,10 +71,9 @@ export default () => {
     state.form.processState = 'sending';
     const pormise = axios(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(state.url)}&disableCache=true`);
     pormise.then((response) => {
-      state.usedUrls.push(state.url);
       state.form.feedback = 'success';
       state.form.processState = 'send';
-      updateStateData(response.data.contents);
+      updateStateData(response.data.contents, state.url);
       state.form.processState = 'waiting';
       updatePosts(state.url, state);
     }).catch((e) => {
@@ -96,7 +95,8 @@ export default () => {
     const formData = new FormData(event.target);
     state.url = formData.get('url');
     state.form.valid = 'valid';
-    schema(state.usedUrls).validate(state.url)
+    const usedUrls = state.data.feeds.map((feed) => feed.url);
+    schema(usedUrls).validate(state.url)
       .then(() => {
         state.form.feedback = null;
         state.form.errors = null;
