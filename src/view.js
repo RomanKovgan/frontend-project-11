@@ -85,13 +85,14 @@ const renderPosts = (container, posts, uiPosts, i18n) => {
   });
 };
 
-const renderModal = (state) => {
+const renderModal = (value, state) => {
+  const data = state.data.posts.find((el) => el.id === value);
   const header = document.querySelector('.modal-title');
   const body = document.querySelector('.modal-body');
   const fullArticle = document.querySelector('.full-article');
-  fullArticle.setAttribute('href', state.link);
-  header.textContent = state.title;
-  body.textContent = state.description;
+  fullArticle.setAttribute('href', data.link);
+  header.textContent = data.title;
+  body.textContent = data.description;
 };
 
 const renderUsedLinks = (state) => {
@@ -157,7 +158,7 @@ const handlerProcessState = (elements, state) => {
   }
 };
 
-const render = (elements, initialState, i18n) => (path, value, prevValue) => {
+export default (elements, initialState, i18n) => (path, value, prevValue) => {
   switch (path) {
     case 'data.feeds':
       renderFeeds(elements.feedsContainer, value, i18n);
@@ -180,10 +181,11 @@ const render = (elements, initialState, i18n) => (path, value, prevValue) => {
     case 'form.errors':
       renderErrors(elements, value, prevValue, i18n);
       break;
+    case 'uiState.modal':
+      renderModal(value, initialState);
+      break;
     default:
       // console.log(`Unknoun path: ${path}`);
       break;
   }
 };
-
-export { render, renderModal };

@@ -5,7 +5,7 @@ import { uniqueId } from 'lodash';
 import i18next from 'i18next';
 import parser from './parser.js';
 import updatePosts from './rssUpdater.js';
-import { render, renderModal } from './view.js';
+import render from './view.js';
 import ru from './locales/ru.js';
 import config from './locales/localeConfig.js';
 
@@ -121,7 +121,5 @@ export default () => {
     if (!postId) { return; }
     state.uiState.modal = postId;
     state.uiState.readedPostsId.add(postId);
-    const data = state.data.posts.find((el) => el.id === postId);
-    renderModal(data);
   });
 };
