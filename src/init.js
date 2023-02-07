@@ -4,7 +4,7 @@ import axios from 'axios';
 import { uniqueId } from 'lodash';
 import i18next from 'i18next';
 import parser from './parser.js';
-import updatePosts from './rssUpdater.js';
+import updatePosts, { buildProxiedUrl } from './rssUpdater.js';
 import render from './view.js';
 import ru from './locales/ru.js';
 import config from './locales/localeConfig.js';
@@ -69,13 +69,13 @@ export default () => {
 
   const addData = () => {
     state.form.processState = 'sending';
-    const pormise = axios(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(state.url)}&disableCache=true`);
+    const proxuUrl = buildProxiedUrl(state.url);
+    const pormise = axios.get(proxuUrl);
     pormise.then((response) => {
       state.form.feedback = 'success';
       state.form.processState = 'send';
       updateStateData(response.data.contents, state.url);
       state.form.processState = 'waiting';
-      updatePosts(state.url, state);
     }).catch((e) => {
       state.form.processState = 'failed';
       switch (e.name) {
@@ -89,6 +89,8 @@ export default () => {
       }
     });
   };
+
+  updatePosts(initialState.data.feeds, state);
 
   elements.formRss.addEventListener('submit', (event) => {
     event.preventDefault();

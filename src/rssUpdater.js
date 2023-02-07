@@ -4,17 +4,22 @@ import parser from './parser.js';
 
 const updateTime = 5000;
 
-const updatePosts = (url, state) => {
-  const promise = axios({
-    method: 'get',
-    url: 'https://allorigins.hexlet.app/raw',
-    params: {
-      url,
-      disableCache: true,
-    },
-  })
+export const buildProxiedUrl = (url) => {
+  const proxy = 'https://allorigins.hexlet.app';
+  const proxyURL = new URL(`${proxy}/get?url=${encodeURIComponent(url)}`);
+  proxyURL.searchParams.append('disableCache', 'true');
+  return proxyURL.href;
+};
+
+const updatePosts = (feeds, state) => {
+  if (feeds.length === 0) {
+    setTimeout(() => updatePosts(feeds, state), updateTime);
+    return;
+  }
+
+  const promises = feeds.map(({ url }) => axios.get(buildProxiedUrl(url))
     .then((response) => {
-      const data = parser(response.data);
+      const data = parser(response.data.contents);
       const { posts } = data;
 
       const viewedPosts = state.data.posts.map((post) => {
@@ -32,9 +37,8 @@ const updatePosts = (url, state) => {
       state.data.posts.push(...postsWithId);
     }).catch((e) => {
       console.error(e.message);
-    });
-
-  promise.finally(setTimeout(() => updatePosts(url, state), updateTime));
+    }));
+  Promise.all(promises).finally(setTimeout(() => updatePosts(feeds, state), updateTime));
 };
 
 export default updatePosts;

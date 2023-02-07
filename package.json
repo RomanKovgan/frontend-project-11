@@ -18,11 +18,10 @@
   },
   "homepage": "https://github.com/RomanKovgan/frontend-project-11#readme",
   "devDependencies": {
-    "@babel/core": "^7.20.5",
     "@babel/eslint-parser": "^7.19.1",
     "@babel/preset-env": "^7.20.2",
     "@webpack-cli/generators": "^3.0.0",
-    "babel-loader": "^9.1.0",
+    "babel-loader": "^9.1.2",
     "css-loader": "^6.7.2",
     "eslint": "^8.29.0",
     "eslint-config-airbnb-base": "^15.0.0",

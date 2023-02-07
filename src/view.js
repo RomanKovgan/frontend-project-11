@@ -15,7 +15,7 @@ const renderFeeds = (container, feeds, i18n) => {
   divCardBorder.append(divCardBody);
 
   const listGroup = document.createElement('ul');
-  listGroup.classList.add('lsit-group', 'border-0', 'rounded-0');
+  listGroup.classList.add('list-group', 'border-0', 'rounded-0');
 
   feeds.forEach((feed) => {
     const itemFeed = document.createElement('li');
